@@ -6,7 +6,7 @@ import csv
 import urllib   #字符串处理
 import time
 
-
+#你可以用此爬取虎牙甚至任何用ajax写的网页
 #写入CSV的操作
 def nestedlist2csv(list, out_file):
        with open(out_file, 'w',errors='ignore') as f:
