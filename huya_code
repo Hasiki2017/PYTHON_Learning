@@ -1,0 +1,80 @@
+import requests
+from lxml import etree 
+import json
+import pandas as pd
+import csv
+import urllib   #字符串处理
+import time
+
+
+#写入CSV的操作
+def nestedlist2csv(list, out_file):
+       with open(out_file, 'w',errors='ignore') as f:
+        w = csv.writer(f)
+        fieldnames=list[0].keys()  # solve the problem to automatically write the header
+        w.writerow(fieldnames)
+      #   print(type(list[0].keys().encode('gbk')))
+        for row in list:
+            # print(type(row.values().encode('gbk')))
+            w.writerow(row.values())
+#构造url，并返回response
+def url_contribute(i):
+    request_headers = {
+        'accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding':'gzip, deflate, sdch, br',
+        'accept-language':'zh-CN,zh;q=0.9',
+        'Cache-Control':'max-age=0',
+        'Cookie':'',
+        'Upgrade-Insecure-Requests':'1',
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}
+    #上图中的url
+    paras = {'page': i}
+    url = "https://www.huya.com/cache.php?m=LiveList&do=getLiveListByPage&gameId=1&tagAll=0&"+urllib.parse.urlencode(paras)
+    #构造这个URL时，注意构造完毕后的检验工作
+    # 上图中的请求方法（get）
+    try:
+        if response.status_code == 200:
+            response= requests.get(url,headers=request_headers).text
+            return response
+        else:
+            print(response.status_code)
+    except requests.HTTPError as e:
+        print(e)
+        print("HTTPError")
+    except requests.RequestException as e:
+        print(e)
+    except:
+        print("Unknown Error !")
+
+#建立存储信息的字典
+def roominfobuild(result,df):
+    #将df送入，再返回df，就实现了df的修改操作
+    data = json.loads(result)['data']
+    #观察json格式的地址发现，它是一个字典，所以将键值为'data'的值取出
+    k=(data['datas'])
+    #取出键值为'data'的value后，发现仍是一个字典，故把键值为'datas'的词取出
+
+    #取出键值为'datas'的value后，发现是一个列表嵌套字典，故遍历每一个字典元素即可
+    for data1 in k:
+        item = {}
+        item['gameFullName'] = data1['gameFullName']
+        item['roomName'] = data1['roomName']
+        item['totalCount'] = data1['totalCount']
+        item['introduction'] = data1['introduction']
+        df.append(item)
+    return df
+#定义主函数
+def main():
+    df=[]
+    #顶一个存放字典的列表
+    for i in range(1,15):
+        print("正在爬取第"+str(i)+"页的信息")
+    #观察到此时虎牙有15页lol的直播，故爬取到15页，后期应可以自动实现定位
+        time.sleep(0.3)
+    #防止对方中断我们的爬取工作，应该可以写在expectation里
+        roominfobuild(url_contribute(i),df)
+    #写入csv中
+    nestedlist2csv(df, 'D:/huya2.csv') 
+
+main()
+
